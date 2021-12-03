@@ -120,3 +120,89 @@ FROM Encompasses JOIN Country ON Encompasses.country = Country.code
 GROUP BY (Encompasses.continent)
 ORDER BY Population DESC;
 ```
+
+5. Lister les pays présentant la plus longue frontière
+```sql
+SELECT NAME, SUM(LENGTH) FROM BORDERS
+JOIN COUNTRY ON COUNTRY1=CODE
+GROUP BY (NAME) ORDER BY (SUM(LENGTH)) DESC;
+```
+
+6. Lister les nom des villes qui apparaissent dans plusieurs pays, avec le nombre d'occurences
+```sql
+SELECT NAME, Count(country) FROM CITY
+GROUP BY NAME
+ORDER BY COUNT(COUNTRY) DESC;
+```
+
+7. Lister les pays dont on connait pas la date d'indépendance
+```sql
+SELECT CODE, NAME FROM POLITICS
+JOIN COUNTRY ON COUNTRY = CODE
+WHERE INDEPENDENCE IS NULL;
+```
+
+8. Lister les pays qui ne sont membres d'aucune organization
+```sql
+SELECT * FROM
+(SELECT CODE FROM COUNTRY) MINUS (SELECT COUNTRY FROM ISMEMBER);
+```
+
+9. Lister les organisations de chaque pays, même ceux qui ne sont membre d'aucune orga
+```sql
+SELECT NAME, ORGANIZATION FROM
+COUNTRY LEFT OUTER JOIN ISMEMBER ON CODE=COUNTRY;
+```
+
+10. Longueurs totales des frontières de chaque continent
+```sql
+SELECT E1.CONTINENT, SUM(LENGTH) FROM BORDERS 
+JOIN ENCOMPASSES E1 ON COUNTRY1=E1.COUNTRY
+JOIN ENCOMPASSES E2 ON COUNTRY2=E2.COUNTRY
+WHERE E1.CONTINENT = E2.CONTINENT
+GROUP BY (E1.CONTINENT)
+ORDER BY SUM(LENGTH) DESC;
+```
+
+13. Donner la moyenne du nombres d'organizations siégeant dans une ville pour les villes accueillant au moins un siège d'organisation
+```sql
+SELECT AVG(NBORGA) FROM 
+  (SELECT CITY, COUNT(*) AS NBORGA FROM ORGANIZATION
+  WHERE CITY IS NOT NULL
+  GROUP BY (CITY)
+  ORDER BY COUNT(*) DESC);
+```
+
+14. Lister les 5 langues les plus parlées avec le nombre de personnes
+```sql
+SELECT LANGUAGE.NAME, SUM(POPULATION * PERCENTAGE / 100) AS NBPEOPLEWHOSPEAKTHIS FROM 
+LANGUAGE JOIN COUNTRY ON COUNTRY=CODE
+GROUP BY (LANGUAGE.NAME)
+ORDER BY (NBPEOPLEWHOSPEAKTHIS) DESC;
+```
+
+16.
+    1-la clé primaire est Country, le type d'index posé est normal.
+    2- Appuyez sur le bouton plan d'exécution (F10)
+       Un index est utilisé dans le plan d'exécution : COUNTRYKEY
+    3- Pas d'index
+    4- ```sql
+        SELECT * FROM POPULATION WHERE POPULATION_GROWTH = 0;
+        ```
+    5- ```sql
+        CREATE INDEX SUPER_INDEX ON POPULATION (POPULATION_GROWTH);
+        ```
+    6- Cela marche de même, nonobstant il est obligatoire de drop en premier lieu le premier index, avant de créer le nouveau
+        ```sql
+        CREATE INDEX SUPER_INDEX ON POPULATION (POPULATION_GROWTH);
+        DROP INDEX SUPER_INDEX;
+
+        CREATE BITMAP INDEX THE_MIC ON POPULATION (POPULATION_GROWTH);
+        DROP INDEX THE_MIC;
+        ```
+    7- l'index "the_mic" n'est pas utilisé pour cette requête, toutefois l'index "super_index" est utilisé.
+
+17.
+```sql
+
+```
