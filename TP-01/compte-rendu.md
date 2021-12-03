@@ -278,3 +278,21 @@ select 'grant select, insert, update, delete on '||table_name||'to Donald;' from
 --stop redirection
 @/full_path/script_généré.sql --execution du fichier
 ```
+
+27.
+```sql
+CREATE OR REPLACE TRIGGER TG_INDEPENDENCE_DAY_NOT_IN_FUTURE
+BEFORE INSERT OR UPDATE ON POLITICS 
+FOR EACH ROW 
+BEGIN
+  
+  IF :NEW.INDEPENDENCE > sysdate THEN
+    RAISE_APPLICATION_ERROR(-20002, 'Date dans le FUTUR!!!');
+  END IF;
+
+END;
+/
+
+-- Test le trigger ... TRIGGGEREDDDD
+UPDATE POLITICS SET INDEPENDENCE=to_date('28/11/23', 'DD/MM/YY') WHERE COUNTRY='F';
+```
