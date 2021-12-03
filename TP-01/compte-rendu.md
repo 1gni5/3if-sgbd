@@ -269,10 +269,12 @@ Afin d'automatiser celà pour pouvoir l'exécuter à 4h du matin :
 ```sql
 --positionner des variables d'environnement
 --pour éviter les affichages indésirables
---redirection des sorties vers le fichier scriptgenere.sql
+
+
+--redirection des sorties vers le fichier /full_path/script_généré.sql
 
 select 'grant select, insert, update, delete on '||table_name||'to Donald;' from user_tables;
 
 --stop redirection
-@scriptgenere.sql --execution du fichier
+@/full_path/script_généré.sql --execution du fichier
 ```
