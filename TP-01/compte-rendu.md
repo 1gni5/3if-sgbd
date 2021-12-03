@@ -182,27 +182,97 @@ ORDER BY (NBPEOPLEWHOSPEAKTHIS) DESC;
 ```
 
 16.
-    1-la clé primaire est Country, le type d'index posé est normal.
-    2- Appuyez sur le bouton plan d'exécution (F10)
+    1. la clé primaire est Country, le type d'index posé est normal.
+    2. Appuyez sur le bouton plan d'exécution (F10).
        Un index est utilisé dans le plan d'exécution : COUNTRYKEY
-    3- Pas d'index
-    4- ```sql
+    3. Pas d'index
+    4. ```sql
         SELECT * FROM POPULATION WHERE POPULATION_GROWTH = 0;
         ```
-    5- ```sql
+    5. ```sql
         CREATE INDEX SUPER_INDEX ON POPULATION (POPULATION_GROWTH);
         ```
-    6- Cela marche de même, nonobstant il est obligatoire de drop en premier lieu le premier index, avant de créer le nouveau
-        ```sql
+    6. Cela marche de même, nonobstant il est obligatoire de drop en premier lieu le premier index, avant de créer le nouveau
+         ```sql
         CREATE INDEX SUPER_INDEX ON POPULATION (POPULATION_GROWTH);
         DROP INDEX SUPER_INDEX;
 
         CREATE BITMAP INDEX THE_MIC ON POPULATION (POPULATION_GROWTH);
         DROP INDEX THE_MIC;
         ```
-    7- l'index "the_mic" n'est pas utilisé pour cette requête, toutefois l'index "super_index" est utilisé.
+    7. l'index "the_mic" n'est pas utilisé pour cette requête, toutefois l'index "super_index" est utilisé.
 
-17.
+17. Solution qui affiche le nom et le noombre de pays frontaliers pour un code de pays
+    1. Fonction qui calcule le nombre de pays frontaliers pour un code de pays
+        ```sql
+        CREATE OR REPLACE FUNCTION NB_PAYS_FRONTALIERS(
+            CODE_PAYS$ COUNTRY.CODE%TYPE
+        ) 
+        RETURN NUMBER
+        IS
+          NB_PAYS_FRONT$ NUMBER := 0;
+
+        BEGIN
+          -- Sélectionne les pays frontaliers 
+          SELECT COUNT(COUNTRY2) INTO NB_PAYS_FRONT$
+          FROM BORDERS JOIN COUNTRY ON CODE=COUNTRY1
+          WHERE COUNTRY1 = CODE_PAYS$ OR CODE_PAYS$ = COUNTRY2;
+
+          -- Retourne le résultat
+          RETURN NB_PAYS_FRONT$;
+        END;
+        /
+        SELECT NB_PAYS_FRONTALIERS('F') FROM DUAL;
+        ```
+    2. Procédure qui affiche le nom et le nombre de pays frontaliers
+        ```sql
+        CREATE OR REPLACE PROCEDURE INFO_PAYS_FRONTALIERS 
+        (
+          CODE_PAYS$ COUNTRY.CODE%TYPE -- Code du pays
+        ) AS
+
+          NOM_PAYS$ COUNTRY.NAME%TYPE; -- Nom du pays
+          NB_PAYS$ NUMBER; -- Nombre de pays frontaliers
+
+        BEGIN 
+          -- Récupère le nom du pays
+          SELECT NAME INTO NOM_PAYS$ FROM COUNTRY WHERE CODE=CODE_PAYS$;
+
+          -- Récupère le nombre de pays frontalier
+          SELECT NB_PAYS_FRONTALIERS(CODE_PAYS$) INTO NB_PAYS$ FROM DUAL;
+
+          -- Affiche les information de ce pays
+          DBMS_OUTPUT.PUT_LINE('Nom du pays: ' || NOM_PAYS$ || ', nombre de pays frontaliers: ' ||NB_PAYS_FRONTALIERS(CODE_PAYS$) );
+        END;
+        /
+
+        EXEC INFO_PAYS_FRONTALIERS('F');
+        ```
+        
+26. Donner les droits à l'autre binôme sur toutes les tables
 ```sql
+grant select, insert, update, delete on country to Donald ;
+-- il faut répèter cette ligne pour chaque table, ce qui est embêtant :), donc il faut automatiser
+```
 
+avoir les informations sur les utilisateurs
+```sql
+select table_name
+from user_tables
+```
+
+```sql
+select 'grant select, insert, update, delete on '||table_name||'to Donald;' from user_tables;
+```
+
+Afin d'automatiser celà pour pouvoir l'exécuter à 4h du matin :
+```sql
+--positionner des variables d'environnement
+--pour éviter les affichages indésirables
+--redirection des sorties vers le fichier scriptgenere.sql
+
+select 'grant select, insert, update, delete on '||table_name||'to Donald;' from user_tables;
+
+--stop redirection
+@scriptgenere.sql --execution du fichier
 ```
