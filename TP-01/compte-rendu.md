@@ -4,10 +4,10 @@
 Création des schémas de table et importation des données.
 ```sql
 -- Création du schéma 
-@full-path\mondial-schema.sql"
+@'full-path\mondial-schema.sql'
 
 -- Insertion des données
-@full-path\mondial-inputs.sql"
+@'full-path\mondial-inputs.sql'
 ```
 
 ## Problème 1
