@@ -1,0 +1,5 @@
+ALTER TABLE CINEMA MODIFY ADRESSE NOT NULL;
+
+-- Essaye d'insérer un nouveau cinéma sans adresse
+INSERT INTO CINEMA (ID_CINEMA, NOM, ARRONDISSEMENT)
+VALUES (1, 'LE GRAND REX', '2nd');
